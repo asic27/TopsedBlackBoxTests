@@ -8,16 +8,16 @@
       <SelectionState runConfigName="ScreenBlackBoxTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="MyDrives_Screen_Test_Base()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="HomeScreen_Test_Main()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="HomeScreen_Buttons_Test_Main()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="Start_Screen_Test()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="HomeScreen_Buttons_Test_Negative()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="MyDrivesScreen_ViewAll_Delete_Rename_Drive_Test()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
