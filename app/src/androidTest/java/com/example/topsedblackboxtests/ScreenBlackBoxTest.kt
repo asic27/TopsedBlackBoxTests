@@ -1,11 +1,9 @@
 package com.example.topsedblackboxtests
 
 import android.content.Context
-import android.graphics.Point
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import androidx.test.uiautomator.UiScrollable
@@ -19,12 +17,252 @@ import org.junit.runner.RunWith
 import java.io.File
 import io.qameta.allure.kotlin.Allure
 import org.junit.Assert.assertTrue
+import org.junit.Before
 
+var packageName = "com.topsed.race"
+val prefix = "$packageName:id"
+
+fun waitApp(device:UiDevice){
+    device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+}
+class WelcomeScreen(private val device: UiDevice) {
+    val skipLoginSelector = By.res("$prefix/skipLoginButton")
+    fun welcomeSkip() {
+            Allure.step("Нажимаем Continue на приветственном экране"){
+            waitApp(device)
+            allureScreenshot(name = "StartButtonOnly", quality = 90, scale = 1.0f)
+            device.apply {
+                wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+                findObject(skipLoginSelector).click()
+                wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+            }
+        }
+    }
+}
+
+class MainScreen(private val device: UiDevice){
+    val startSelector = By.res("$prefix/startBtn")
+    val stopSelector = By.res("$prefix/stopBtn")
+    val pauseSelector = By.res("$prefix/pauseBtn")
+    val allowSelector = By.res("$prefix/allowBtn")
+    val cancelSelector = By.res("$prefix/cancelBtn")
+    val arcProgressSelector = By.res("$prefix/arcProgress")
+
+    fun clickStartButton() {
+        Allure.step("Запускаем поездку нажатием кнопки старт") {
+            waitStartButton()
+            device.findObject(startSelector).click()
+
+        }
+    }
+
+    fun clickStopButton(){
+        Allure.step("Нажимаем стоп") {
+            waitStopButton()
+            device.findObject(stopSelector).click()
+        }
+    }
+
+    fun clickPauseButton(){
+        Allure.step("Нажимаем паузу") {
+            waitPauseButton()
+            device.findObject(pauseSelector).click()
+        }
+    }
+
+    fun clickCancelButton(){
+        Allure.step("В окне с запросом на разрешения использования геолокации от приложения нажимаем отмена") {
+            waitCancelButton()
+            device.findObject(cancelSelector).click()
+        }
+    }
+
+    fun clickAllowButton() {
+        Allure.step("В окне с запросом на разрешения использования геолокации от приложения нажимаем разрешить") {
+            waitAllowButton()
+            device.findObject(allowSelector).click()
+        }
+    }
+
+    fun hasObjectStartButton():Boolean{
+        waitStartButton()
+        return device.hasObject(startSelector)
+    }
+
+    fun hasObjectStopButton():Boolean{
+        waitStopButton()
+        return device.hasObject(stopSelector)
+    }
+
+    fun hasObjectPauseButton():Boolean{
+        waitPauseButton()
+        return device.hasObject(pauseSelector)
+    }
+    fun hasObjectAcrProgress():Boolean{
+        waitArcProgress()
+        return device.hasObject(arcProgressSelector)
+    }
+    fun waitArcProgress(){
+        device.wait(Until.hasObject(arcProgressSelector), 5000L)
+    }
+    fun waitAllowButton(){
+        device.wait(Until.hasObject(allowSelector), 5000L)
+    }
+    fun waitStartButton(){
+        device.wait(Until.hasObject(startSelector), 5000L)
+    }
+    fun waitStopButton(){
+        device.wait(Until.hasObject(stopSelector), 5000L)
+    }
+    fun waitPauseButton(){
+        device.wait(Until.hasObject(pauseSelector), 5000L)
+    }
+    fun waitCancelButton(){
+        device.wait(Until.hasObject(cancelSelector), 5000L)
+    }
+
+}
+
+class DriveReportScreen(private val device: UiDevice){
+    val titleText = By.text("Ride Details")
+    fun hasObjectTitle():Boolean = device.hasObject(titleText)
+}
+
+class MyDrivesScreen(private val device: UiDevice){
+    val navMyDrivesSelector = By.res("$prefix/nav_my_drives")
+    val navRankSelector = By.res("$prefix/nav_rank")
+    val totalDriveSelector = By.res("$prefix/totalDriveText")
+    val topSpeedSelector = By.res("$prefix/topSpeedText")
+    val recViewSelector =  By.res("$prefix/recyclerView")
+        //UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
+    val recViewScrollable = UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
+
+    val recViewAllSelector = By.res("$prefix/recyclerView")
+
+    val recViewAllScrollable = UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
+    val viewAllSelector = By.res("$prefix/viewAllBtn")
+    val recViewRankScrollable = UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
+    val recViewRankSelector =  By.res("$prefix/recyclerView")
+    val deleteIcon = By.res("$prefix/deleteIcon")
+    val tagName = UiSelector().resourceId("$prefix/tagText")
+    val cardTopLayout = UiSelector().resourceId("$prefix/top_layout")
+    val cmpIcon = By.res("$prefix/compareIcon")
+
+    fun waitNavMyDrives(){
+        device.wait(Until.hasObject(navMyDrivesSelector), 5000L)
+    }
+    fun waitNavRank(){
+        device.wait(Until.hasObject(navRankSelector), 5000L)
+    }
+    fun clickNavRank(){
+        Allure.step("Переходим на вкладку рейтинга поездки") {
+            waitNavRank()
+            device.findObject(navRankSelector).click()
+            waitRecViewRank()
+        }
+    }
+
+    fun clickNavMyDrives(){
+        Allure.step("Переходим на основной экран со списком поездок") {
+            waitNavMyDrives()
+            device.findObject(navMyDrivesSelector).click()
+            waitTotalDrives()
+        }
+    }
+
+    fun recViewScrolltoEnd(){
+        waitRecView()
+        recViewScrollable.scrollToEnd(3)
+    }
+    fun recViewScrolltoBegining(){
+        Allure.step("Скроллим список поездок в начало") {
+            waitRecView()
+            recViewScrollable.scrollToBeginning(3)
+        }
+    }
+    fun waitTotalDrives(){
+        device.wait(Until.hasObject(totalDriveSelector), 5000L)
+    }
+    fun waitRecView(){
+        device.wait(Until.hasObject(recViewSelector), 1000L)
+    }
+    fun waitRecViewRank(){
+        device.wait(Until.hasObject(recViewRankSelector), 1000L)
+    }
+    fun waitRecViewAll(){
+        device.wait(Until.hasObject(recViewAllSelector), 1000L)
+    }
+    fun waitViewAllButton(){
+        device.wait(Until.hasObject(viewAllSelector), 1000L)
+    }
+    fun clickViewButton() {
+            waitViewAllButton()
+            device.findObject(viewAllSelector).click()
+    }
+
+    fun clickDeleteIcon(){
+        device.findObject(deleteIcon).click()
+    }
+    fun clickCmpIcon(){
+        device.findObject(cmpIcon).click()
+    }
+    fun getRecViewChildCount():Int{
+        waitRecView()
+        return recViewScrollable.getChildCount()
+    }
+    fun getRecViewAllChildCount():Int{
+        waitRecViewAll()
+        return recViewAllScrollable.getChildCount()
+    }
+    fun getRecViewRankChildCount():Int{
+        waitRecViewRank()
+        return recViewRankScrollable.getChildCount()
+    }
+    fun getRecViewAllChildByIndex(index:Int) = recViewAllScrollable.getChild(UiSelector().className("androidx.cardview.widget.CardView").index(index))
+
+    fun getRecViewChildByIndex(index:Int) = recViewScrollable.getChild(UiSelector().className("androidx.cardview.widget.CardView").index(index))
+    fun getTagNamefromCardViewAll(index:Int)= getRecViewAllChildByIndex(index).getChild(tagName)
+
+    fun getTagNamefromCardView(index:Int)= getRecViewChildByIndex(index).getChild(tagName)
+
+    fun clickonCardViewByIndex (index: Int) = getRecViewChildByIndex(index).getChild(cardTopLayout).click()
+
+    fun getTotalDrivesCount(): String = device.findObject(totalDriveSelector).text
+
+    fun getTopSpeedValue(): String = device.findObject(topSpeedSelector).text
+}
+class CompareScreen(private val device: UiDevice){
+    val bottomSheetSelector = By.res("$prefix/bottomSheet")
+    val myTopSpeedTextSelector = By.res("$prefix/myTopSpeedText")
+    val otherTopSpeedSelector = By.res("$prefix/otherTopSpeedText")
+    val myAvgSpeedSelector = By.res("$prefix/myAvgSpeedText")
+    val otherAvgSpeedSelector = By.res("$prefix/otherAvgSpeedText")
+    val myTotalDistSelector =By.res("$prefix/myTotalDistanceText")
+    val otherTotalDistSelector = By.res("$prefix/otherTotalDistanceText")
+
+    fun waitBottomSheet(){
+        device.wait(Until.hasObject(bottomSheetSelector), 1000L)
+    }
+    fun waitMyTotalDistance(){
+        device.wait(Until.hasObject(myTotalDistSelector), 1000L)
+    }
+
+    fun getMyTopSpeed() = device.findObject(myTopSpeedTextSelector).text
+
+    fun getOtherTopSpeed() = device.findObject(otherTopSpeedSelector).text
+
+    fun getMyAvgSpeed() = device.findObject(myAvgSpeedSelector).text
+
+    fun getOtherAvgSpeed() = device.findObject(otherAvgSpeedSelector).text
+
+    fun getMyTotalDist() = device.findObject(myTotalDistSelector).text
+
+    fun getOtherTotalDist() = device.findObject(otherTotalDistSelector).text
+}
 
 @RunWith(AllureAndroidJUnit4::class)
 class ScreenBlackBoxTest {
-    var packageName = "com.topsed.race"
-    val prefix = "$packageName:id"
+
     @After
     fun deleteApp(){
         val instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -32,102 +270,79 @@ class ScreenBlackBoxTest {
         device.executeShellCommand("pm uninstall $packageName")
     }
 
-    @Test
-    fun useAppContex(){
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.example.topsedblackboxtests", appContext.packageName)
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val device = UiDevice.getInstance(instrumentation)
 
-        device.wakeUp()
-        device.pressHome()
-    }
     @Test
     fun `Start_Screen_Test`() {
         Allure.step("Установка приложения")
-        val device = installApp()
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
-        //device.dumpWindowHierarchy(System.out)
-        Allure.step("Нажимаем Continue на приветственном экране") {
-            allureScreenshot(name = "StartButtonOnly", quality = 90, scale = 1.0f)
-        }
-        device.findObject(By.res("$prefix/skipLoginButton")).click()
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
-        //device.dumpWindowHierarchy(System.out)
+        val device = getDivice()
+        WelcomeScreen(device).welcomeSkip()
         Allure.step("Проверяем, что на экране элемент спидометра с основного экране приложения") {
             allureScreenshot(name = "StartButtonOnly", quality = 90, scale = 1.0f)
+            assertTrue(MainScreen(device).hasObjectAcrProgress())
         }
-        device.findObject(By.res("$prefix/arcProgress"))
     }
 
     @Test
     fun `HomeScreen_Buttons_Test_Main`(){
         Allure.step("Установка приложения")
-        val device = installApp()
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
-        Allure.step("Нажимаем Continue на приветственном экране")
-        device.findObject(By.res("$prefix/skipLoginButton")).click()
-
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
-
-        Allure.step("Запускаем поездку нажатием кнопки старт")
-        device.findObject(By.res("$prefix/startBtn")).click()
-
-        waitObject(device,"allowBtn")
-
-        Allure.step("В окне с запросом на разрешения использования геолокации от приложения нажимаем разрешить")
-        device.findObject(By.res("$prefix/allowBtn")).click()
-
+        val device = getDivice()
+        WelcomeScreen(device).welcomeSkip()
+        val mainScr = MainScreen(device)
+        mainScr.clickStartButton()
+        mainScr.clickAllowButton()
         device.wait(Until.hasObject(By.res("android:id/message")), 5000L)
-
         Allure.step("В окне с запросом на разрешения использования геолокации от ОС нажимаем разрешить")
         device.findObject(By.res("com.android.permissioncontroller:id/permission_allow_foreground_only_button")).click()
-
-        waitObject(device,"arcProgress")
+        mainScr.waitArcProgress()
 
         Allure.step("Проверяем, что на экране отображаются кнопки пауза и стоп, но не отображается кнопка старт") {
+            device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
             allureScreenshot(name = "PauseStopButtonsOnly", quality = 90, scale = 1.0f)
+            assertTrue(mainScr.hasObjectStopButton())
+            assertTrue(mainScr.hasObjectPauseButton())
+            assertTrue(!mainScr.hasObjectStartButton())
         }
-        assertTrue(device.hasObject(By.res("$prefix/stopBtn")))
-        assertTrue(device.hasObject(By.res("$prefix/pauseBtn")))
-        assertTrue(!device.hasObject(By.res("$prefix/startBtn")))
-
-        Allure.step("Нажимаем паузу")
-        device.findObject(By.res("$prefix/pauseBtn")).click()
-        //device.dumpWindowHierarchy(System.out)
+        mainScr.clickPauseButton()
         Allure.step("Проверяем, что на экране отображаются кнопки пауза и стоп, но не отображается кнопка старт") {
+            device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
             allureScreenshot(name = "PauseStopButtonsOnlyonPause", quality = 90, scale = 1.0f)
+            assertTrue(mainScr.hasObjectStopButton())
+            assertTrue(mainScr.hasObjectPauseButton())
+            assertTrue(!mainScr.hasObjectStartButton())
         }
-        assertTrue(device.hasObject(By.res("$prefix/stopBtn")))
-        assertTrue(device.hasObject(By.res("$prefix/pauseBtn")))
-        assertTrue(!device.hasObject(By.res("$prefix/startBtn")))
 
-        Allure.step("Нажимаем стоп")
-        device.findObject(By.res("$prefix/stopBtn")).click()
-
-        Allure.step("Отменяем остановку поездки в всплывающем окне") {
-            allureScreenshot(name = "PauseStopButtonsOnlyonPause", quality = 90, scale = 1.0f)
+        Allure.step("Нажимаем стоп и отменяем остановку поездки в всплывающем окне") {
+            mainScr.clickStopButton()
+            device.apply {
+                wait(Until.hasObject(By.res("android:id/message")), 5000L)
+                Allure.step("Отменяем остановку поездки во всплывающем окне")
+                allureScreenshot(name = "PauseStopButtonsOnlyonPause", quality = 90, scale = 1.0f)
+                findObject(By.res("android:id/button2")).click()
+                wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+            }
         }
-        device.wait(Until.hasObject(By.res("android:id/message")), 5000L)
-        device.findObject(By.res("android:id/button2")).click()
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
         //device.dumpWindowHierarchy(System.out)
         Allure.step("Проверяем, что на экране отображаются кнопки пауза и стоп, но не отображается кнопка старт") {
             allureScreenshot(name = "PauseStopButtonsOnlyAfterTryStop", quality = 90, scale = 1.0f)
+            assertTrue(mainScr.hasObjectStopButton())
+            assertTrue(mainScr.hasObjectPauseButton())
+            assertTrue(!mainScr.hasObjectStartButton())
         }
-        assertTrue(device.hasObject(By.res("$prefix/stopBtn")))
-        assertTrue(device.hasObject(By.res("$prefix/pauseBtn")))
-        assertTrue(!device.hasObject(By.res("$prefix/startBtn")))
 
-        Allure.step("Снова нажимаем стоп и останавливаем поездку")
-        device.findObject(By.res("$prefix/stopBtn")).click()
-        device.wait(Until.hasObject(By.res("android:id/message")), 5000L)
-        device.findObject(By.res("android:id/button1")).click()
+        Allure.step("Снова нажимаем стоп и останавливаем поездку") {
+            mainScr.clickStopButton()
+            device.apply {
+                //findObject(By.res("$prefix/stopBtn")).click()
+                Allure.step("Останавливаем поездку во всплывающем окне")
+                wait(Until.hasObject(By.res("android:id/message")), 5000L)
+                findObject(By.res("android:id/button1")).click()
+            }
+        }
 
         device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
 
         Allure.step("Проверяем, что открылся отчет о поездке") {
-            assertTrue(device.hasObject(By.text("Ride Details")))
+            assertTrue(DriveReportScreen(device).hasObjectTitle())
             allureScreenshot(name = "DriveReport", quality = 90, scale = 1.0f)
         }
 
@@ -136,246 +351,207 @@ class ScreenBlackBoxTest {
     @Test
     fun `HomeScreen_Buttons_Test_Negative`(){
         Allure.step("Установка приложения")
-        val device = installApp()
+        val device = getDivice()
 
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+        WelcomeScreen(device).welcomeSkip()
 
-        Allure.step("Нажимаем Continue на приветственном экране")
-        device.findObject(By.res("$prefix/skipLoginButton")).click()
+        val mainScr = MainScreen(device)
 
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+        mainScr.clickStartButton()
 
-        Allure.step("Запускаем поездку нажатием кнопки старт")
-        device.findObject(By.res("$prefix/startBtn")).click()
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
-        //device.dumpWindowHierarchy(System.out)
-        Allure.step("В окне с запросом на разрешения использования геолокации от приложения нажимаем отмена")
-        device.findObject(By.res("$prefix/cancelBtn")).click()
-
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
+        mainScr.clickCancelButton()
 
         Allure.step("Проверяем, что на экране осталась кнопка старт, но отсуствуют кнопки паузы и стоп") {
+            mainScr.waitArcProgress()
             allureScreenshot(name = "StartButtonOnly", quality = 90, scale = 1.0f)
+            assertTrue(!mainScr.hasObjectStopButton())
+            assertTrue(!mainScr.hasObjectPauseButton())
+            assertTrue(mainScr.hasObjectStartButton())
         }
-        assertTrue(!device.hasObject(By.res("$prefix/stopBtn")))
-        assertTrue(!device.hasObject(By.res("$prefix/pauseBtn")))
-        assertTrue(device.hasObject(By.res("$prefix/startBtn")))
 
-        Allure.step("Снова нажимаем кнопку старт")
-        device.findObject(By.res("$prefix/startBtn")).click()
-        waitObject(device,"allowBtn")
+        mainScr.clickStartButton()
 
-        Allure.step("В окне с запросом на разрешения использования геолокации от приложения нажимаем разрешить")
-        device.findObject(By.res("$prefix/allowBtn")).click()
+        mainScr.clickAllowButton()
 
-        device.wait(Until.hasObject(By.res("android:id/message")), 5000L)
-        //device.dumpWindowHierarchy(System.out)
-
-        Allure.step("В окне с запросом на разрешения использования геолокации от ОС нажимаем отмена")
-        device.findObject(By.res("com.android.permissioncontroller:id/permission_deny_button")).click()
-
-        waitObject(device,"arcProgress")
+        Allure.step("В окне с запросом на разрешения использования геолокации от ОС нажимаем отмена") {
+            device.apply {
+                wait(Until.hasObject(By.res("android:id/message")), 5000L)
+                findObject(By.res("com.android.permissioncontroller:id/permission_deny_button")).click()
+            }
+            waitObject(device, "arcProgress")
+        }
 
         Allure.step("Проверяем, что на экране снова осталась кнопка старт, но отсуствуют кнопки паузы и стоп") {
             allureScreenshot(name = "StartButtonOnlyAgain", quality = 90, scale = 1.0f)
+            assertTrue(!mainScr.hasObjectStopButton())
+            assertTrue(!mainScr.hasObjectPauseButton())
+            assertTrue(mainScr.hasObjectStartButton())
         }
-        assertTrue(!device.hasObject(By.res("$prefix/stopBtn")))
-        assertTrue(!device.hasObject(By.res("$prefix/pauseBtn")))
-        assertTrue(device.hasObject(By.res("$prefix/startBtn")))
+
     }
 
     @Test
     fun `MyDrives_Screen_Test_Base`(){
         Allure.step("Установка приложения и тестовой БД с 2 поездками")
-        val device = installApp()
+        val device = getDivice()
+
         downloadTestDatabase(com.example.topsedblackboxtests.test.R.raw.topsedv1)
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
 
-        Allure.step("Нажимаем Continue на приветственном экране")
-        device.findObject(By.res("$prefix/skipLoginButton")).click()
+        waitApp(device)
 
-        waitObject(device,"nav_my_drives")
-        //device.wait(Until.hasObject(By.res("$prefix/nav_my_drives").depth(0)), 5000L)
-        Allure.step("Переходим на основной экран со списком поездок")
-        device.findObject(By.res("$prefix/nav_my_drives")).click()
+        WelcomeScreen(device).welcomeSkip()
+
+        val myDrvScr = MyDrivesScreen(device)
+
+        myDrvScr.clickNavMyDrives()
 
         Allure.step("Проверяем отображаемые значения максимальной скорости и количества поездок") {
             allureScreenshot(name = "DriveList", quality = 90, scale = 1.0f)
+            assertEquals("2",myDrvScr.getTotalDrivesCount())
+            assertEquals("23 mph",myDrvScr.getTopSpeedValue())//в БД скорость приведена в м/с
         }
-        assertEquals("2",device.findObject(By.res("$prefix/totalDriveText")).text)
-        assertEquals("23 mph",device.findObject(By.res("$prefix/topSpeedText")).text)//в БД скорость приведена в м/с
+
     }
 
     @Test
     fun `MyDrivesScreen_ViewAll_Delete_Rename_Drive_Test`(){
         Allure.step("Установка приложения и тестовой БД с 4 поездками")
-        val device = installApp()
+        val device = getDivice()
         downloadTestDatabase(com.example.topsedblackboxtests.test.R.raw.topsedv1allviews)
         device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
 
-        Allure.step("Нажимаем Continue на приветственном экране")
-        device.findObject(By.res("$prefix/skipLoginButton")).click()
+        WelcomeScreen(device).welcomeSkip()
 
-
-        waitObject(device,"nav_my_drives")
-
-        Allure.step("Переходим на основной экран со списком поездок")
-        device.findObject(By.res("$prefix/nav_my_drives")).click()
-        waitObject(device, "totalDriveText")
+        val myDrvScr = MyDrivesScreen(device)
+        myDrvScr.clickNavMyDrives()
 
         Allure.step("Проверяем отображаемые значения максимальной скорости и количества поездок"){
             allureScreenshot(name = "DriveList", quality = 90, scale = 1.0f)
+            assertEquals("4",myDrvScr.getTotalDrivesCount())
+            assertEquals("63 mph",myDrvScr.getTopSpeedValue())//в БД скорость приведена в м/с
         }
-        assertEquals("4",device.findObject(By.res("$prefix/totalDriveText")).text)
-        assertEquals("63 mph",device.findObject(By.res("$prefix/topSpeedText")).text)//в БД скорость приведена в м/с
-
-        waitObject(device,"recyclerView")
-
-        val recview = UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
 
         Allure.step("Скроллим список поездок до конца и нажимаем ViewAllButton") {
-            recview.scrollToEnd(3)
+            myDrvScr.recViewScrolltoEnd()
             allureScreenshot(name = "ViewAllButton", quality = 90, scale = 1.0f)
-            device.findObject(By.res("$prefix/viewAllBtn")).click()
+            myDrvScr.clickViewButton()
         }
 
-        waitObject(device,"recyclerView")
 
         Allure.step("Проверяем, что в полном списке поездок отображено 4 элемента ") {
-            assertEquals(recview.getChildCount(), 4)
+            assertEquals(myDrvScr.getRecViewChildCount(), 4)
             allureScreenshot(name = "AllDrivesList", quality = 90, scale = 1.0f)
         }
 
-        Allure.step("Удаляем поездку из списка (поездка с самой высокой максимальной скоростью)")
-        device.findObject(By.res("$prefix/deleteIcon")).click()
-        device.wait(Until.hasObject(By.res("android:id/message")), 5000L)
-        device.findObject(By.res("android:id/button1")).click()
-
-        waitObject(device,"recyclerView")
+        Allure.step("Удаляем поездку из списка (поездка с самой высокой максимальной скоростью)") {
+            myDrvScr.clickDeleteIcon()
+            device.apply {
+                wait(Until.hasObject(By.res("android:id/message")), 5000L)
+                findObject(By.res("android:id/button1")).click()
+            }
+        }
 
         Allure.step("Проверяем, что в списке теперь отображено 3 поездки") {
-            assertEquals(recview.getChildCount(), 3)
+            assertEquals(myDrvScr.getRecViewAllChildCount(), 3)
             allureScreenshot(name = "AllDrivesListAfterDelete", quality = 90, scale = 1.0f)
         }
 
         Allure.step("Меняем название первой поездки в списке и проверяем что изменения отобразились") {
-            recview.getChild(UiSelector().className("androidx.cardview.widget.CardView").index(0))
-                .getChild(UiSelector().resourceId("$prefix/tagText")).click()
-            device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
-            //device.dumpWindowHierarchy(System.out)
-            device.findObject(UiSelector().className("android.widget.EditText"))
-                .setText("Test Ride")
-            device.findObject(By.res("android:id/button1")).click()
-
-            waitObject(device, "recyclerView")
-
+            myDrvScr.getTagNamefromCardViewAll(0).click()
+            waitApp(device)
+            device.apply {
+                findObject(UiSelector().className("android.widget.EditText")).setText("Test Ride")
+                findObject(By.res("android:id/button1")).click()
+            }
+            myDrvScr.waitRecViewAll()
+            //waitObject(device, "recyclerView")
             allureScreenshot(name = "RenamedDrive", quality = 90, scale = 1.0f)
+            assertEquals("Test Ride",myDrvScr.getTagNamefromCardViewAll(0).text)
+
         }
-        assertEquals("Test Ride",recview.getChild(UiSelector().className("androidx.cardview.widget.CardView").index(0)).getChild(UiSelector().resourceId("$prefix/tagText")).text)
 
         Allure.step("Возвращаемся на основной экран со списком поездок") {
             device.findObject(By.desc("Navigate up")).click()
-            waitObject(device, "recyclerView")
+            myDrvScr.waitRecView()
         }
 
-        Allure.step("Скроллим список поездок в начало")
-        recview.scrollToBeginning(3)
-
+        myDrvScr.recViewScrolltoBegining()
         Allure.step("Проверяем, что первая поездка в списке имеет изменённое название") {
             allureScreenshot(name = "RenamedDrive", quality = 90, scale = 1.0f)
+            assertEquals("Test Ride",myDrvScr.getTagNamefromCardView(0).text)
         }
-        assertEquals("Test Ride",recview.getChild(UiSelector().className("androidx.cardview.widget.CardView").index(0)).getChild(UiSelector().resourceId("$prefix/tagText")).text)
+
 
         Allure.step("Проверяем, что отображаемые значения максимальной скорости и количества поездок изменились"){
+            assertEquals("3",myDrvScr.getTotalDrivesCount())
+            assertEquals("62 mph",myDrvScr.getTopSpeedValue())//в БД скорость приведена в м/с
             allureScreenshot(name = "NewTops", quality = 90, scale = 1.0f)
         }
-        assertEquals("3",device.findObject(By.res("$prefix/totalDriveText")).text)
-        assertEquals("62 mph",device.findObject(By.res("$prefix/topSpeedText")).text)//в БД скорость приведена в м/с
     }
 
     @Test
     fun `Compare_Screen_Test`(){
         Allure.step("Установка приложения и тестовой БД с 2 поездками для сравнения")
-        val device = installApp()
+        val device = getDivice()
         downloadTestDatabase(com.example.topsedblackboxtests.test.R.raw.topsedv1compare)
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), 5000L)
 
-        Allure.step("Нажимаем Continue на приветственном экране")
-        device.findObject(By.res("$prefix/skipLoginButton")).click()
+        WelcomeScreen(device).welcomeSkip()
 
-        waitObject(device,"nav_my_drives")
+        val myDrvScr = MyDrivesScreen(device)
 
-        Allure.step("Переходим на основной экран со списком поездок")
-        device.findObject(By.res("$prefix/nav_my_drives")).click()
-
-
-        waitObject(device,"totalDriveText")
-        var recview = UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
+        myDrvScr.clickNavMyDrives()
 
         Allure.step("Проверяем отображаемое значение количества поездок") {
             allureScreenshot(name = "DriveList", quality = 90, scale = 1.0f)
-            assertEquals("2", device.findObject(By.res("$prefix/totalDriveText")).text)
-            assertEquals(recview.getChildCount(), 2)
+            assertEquals("2",myDrvScr.getTotalDrivesCount())
+            assertEquals(myDrvScr.getRecViewChildCount(), 2)
         }
 
-        Allure.step("Нажимаем на первую поездку в списке")
-        recview.getChild(UiSelector().className("androidx.cardview.widget.CardView").index(0)).getChild(UiSelector().resourceId("$prefix/top_layout")).click()
+        Allure.step("Нажимаем на первую поездку в списке") {
+            myDrvScr.clickonCardViewByIndex(0)
+        }
 
-        Allure.step("Переходим на вкладку рейтинга поездки")
-        device.findObject(By.res("$prefix/nav_rank")).click()
-
-
-        waitObject(device,"recyclerView")
+        Allure.step("Переходим на вкладку рейтинга поездки") {
+            myDrvScr.clickNavRank()
+        }
 
         Allure.step("Проверяем, что в списке сравнения поездок две записи") {
+            assertEquals(myDrvScr.getRecViewRankChildCount(), 2)
             allureScreenshot(name = "RankScreen", quality = 90, scale = 1.0f)
-            recview = UiScrollable(UiSelector().resourceId("$prefix/recyclerView"))
-            assertEquals(recview.getChildCount(), 2)
         }
-
+        val cmpScr = CompareScreen(device)
         Allure.step("Нажимаем на поездку отображаемым значком сравнения") {
-            device.findObject(By.res("$prefix/compareIcon")).click()
-            waitObject(device, "bottomSheet")
+            myDrvScr.clickCmpIcon()
+            cmpScr.waitBottomSheet()
             allureScreenshot(name = "CompareScreenBase", quality = 90, scale = 1.0f)
         }
 
-        Allure.step("Вытягиваем информацию о поездках с помощью свайпа")
-        val displayHeight = device.displayHeight
-        val displayWidth = device.displayWidth
+        Allure.step("Вытягиваем информацию о поездках с помощью свайпа") {
+            val displayHeight = device.displayHeight
+            val displayWidth = device.displayWidth
 
-        device.swipe(
-            displayWidth / 2,
-            displayHeight - 200,
-            displayWidth / 2,
-            (displayHeight * 0.2).toInt(),
-            20
-        )
-
-        waitObject(device,"myTotalDistanceText")
-
+            device.swipe(
+                displayWidth / 2,
+                displayHeight - 200,
+                displayWidth / 2,
+                (displayHeight * 0.2).toInt(),
+                20
+            )
+        }
 
         Allure.step("Проверяем правильность отображаемой информации о поездках") {
+            cmpScr.waitMyTotalDistance()
             allureScreenshot(name = "CompareScreenWithInfo", quality = 90, scale = 1.0f)
-            val myMaxSpeed = device.findObject(By.res("$prefix/myTopSpeedText")).text
-            val otherMaxSpeed = device.findObject(By.res("$prefix/otherTopSpeedText")).text
-            assertEquals("316 mph", myMaxSpeed)
-            assertEquals("316 mph", otherMaxSpeed)
-            //assertTrue(myMaxSpeed.substringBefore(" mph").toInt()==otherMaxSpeed.substringBefore(" mph").toInt())
-
-            val myAvgSpeed = device.findObject(By.res("$prefix/myAvgSpeedText")).text
-            val otherAvgSpeed = device.findObject(By.res("$prefix/otherAvgSpeedText")).text
-            assertEquals("663 mph", myAvgSpeed)
-            assertEquals("677 mph", otherAvgSpeed)
-            //assertTrue(myAvgSpeed.substringBefore(" mph").toInt()<otherAvgSpeed.substringBefore(" mph").toInt())
-
-            val myTotalDist = device.findObject(By.res("$prefix/myTotalDistanceText")).text
-            val otherTotalDist = device.findObject(By.res("$prefix/otherTotalDistanceText")).text
-            assertEquals("2 mi", myTotalDist)
-            assertEquals("2.1 mi", otherTotalDist)
-            //assertTrue(myTotalDist.substringBefore(" mi").toDouble()<otherTotalDist.substringBefore(" mi").toDouble())
+            assertEquals("316 mph", cmpScr.getMyTopSpeed())
+            assertEquals("316 mph", cmpScr.getOtherTopSpeed())
+            assertEquals("663 mph", cmpScr.getMyAvgSpeed())
+            assertEquals("677 mph", cmpScr.getOtherAvgSpeed())
+            assertEquals("2 mi", cmpScr.getMyTotalDist())
+            assertEquals("2.1 mi", cmpScr.getOtherTotalDist())
         }
     }
-    fun installApp(): UiDevice{
+    @Before
+    fun installApp(){
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val device = UiDevice.getInstance(instrumentation)
 
@@ -393,6 +569,15 @@ class ScreenBlackBoxTest {
 
         val intent = context.packageManager.getLaunchIntentForPackage(packageName)
         ApplicationProvider.getApplicationContext<Context>().startActivity(intent)
+        //return device
+    }
+
+    fun getDivice(): UiDevice{
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val device = UiDevice.getInstance(instrumentation)
+        //val context = ApplicationProvider.getApplicationContext<Context>()
+        //val intent = context.packageManager.getLaunchIntentForPackage(packageName)
+        //ApplicationProvider.getApplicationContext<Context>().startActivity(intent)
         return device
     }
 
@@ -411,7 +596,6 @@ class ScreenBlackBoxTest {
         device.executeShellCommand("chmod 777 /data/data/com.topsed.race/databases/topsedv1.db")
     }
     fun waitObject(device:UiDevice, objectid: String){
-
         device.wait(Until.hasObject(By.res("$prefix/$objectid")), 5000L)
     }
 
